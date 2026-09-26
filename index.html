@@ -16,7 +16,7 @@
       background-color: #f4f6f8;
       color: #333;
       padding: 20px 10px;
-      max-width: 900px;
+      max-width: 800px;
       margin: 0 auto;
     }
 
@@ -175,41 +175,19 @@
       font-size: 14px;
     }
 
-    /* 店舗一覧（グリッド表示） */
+    /* 店舗一覧 */
     .store-list {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      display: flex;
+      flex-direction: column;
       gap: 15px;
     }
 
     .store-card {
       background: white;
       border-radius: 12px;
-      overflow: hidden;
+      padding: 15px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.05);
       border: 1px solid #edf2f7;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .store-image-container {
-      width: 100%;
-      height: 160px;
-      overflow: hidden;
-      background-color: #f7fafc;
-    }
-
-    .store-image {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .store-info {
-      padding: 15px;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
     }
 
     .category-badge {
@@ -220,13 +198,12 @@
       padding: 3px 8px;
       border-radius: 4px;
       margin-bottom: 8px;
-      align-self: flex-start;
     }
 
     .store-name {
       font-size: 16px;
       font-weight: bold;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
 
     .store-detail {
@@ -396,23 +373,6 @@
 
     let currentFilter = "すべて";
 
-    // --- フレンチ用内観画像設定 ---
-    const frenchInteriorImage = "image_16.png"; // 添付画像のファイル名に変更
-
-    // 店舗情報に基づいて画像urlを決定する関数
-    function getStoreImageUrl(store) {
-      const categoryName = store.category || "";
-      // カテゴリー名に「フレンチ」または「フランス」が含まれているか判定
-      const isFrench = categoryName.includes("フレンチ") || categoryName.includes("フランス");
-
-      // フレンチの場合は指定の内観画像を表示
-      if (isFrench) {
-        return frenchInteriorImage;
-      }
-      // それ以外で画像が設定されていればそれを返す
-      return store.imageUrl || null;
-    }
-
     // --- 描画処理 ---
     function saveAndRender() {
       localStorage.setItem('gourmet_categories', JSON.stringify(categories));
@@ -463,30 +423,18 @@
       });
 
       if (filteredStores.length === 0) {
-        storeList.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding: 40px; color: #a0aec0;">該当するお店がありません</div>`;
+        storeList.innerHTML = `<div style="text-align:center; padding: 40px; color: #a0aec0;">該当するお店がありません</div>`;
         return;
       }
 
-      storeList.innerHTML = filteredStores.map(store => {
-        // 店舗ごとの画像URLを取得
-        const imageUrl = getStoreImageUrl(store);
-
-        return `
-          <div class="store-card">
-            ${imageUrl ? `
-              <div class="store-image-container">
-                <img src="${imageUrl}" alt="${store.name}" class="store-image" />
-              </div>
-            ` : ''}
-            <div class="store-info">
-              <span class="category-badge">${store.category}</span>
-              <div class="store-name">${store.name}</div>
-              ${store.address ? `<div class="store-detail">📍 ${store.address}</div>` : ''}
-              ${store.phone ? `<div class="store-detail">📞 ${store.phone}</div>` : ''}
-            </div>
-          </div>
-        `;
-      }).join('');
+      storeList.innerHTML = filteredStores.map(store => `
+        <div class="store-card">
+          <span class="category-badge">${store.category}</span>
+          <div class="store-name">${store.name}</div>
+          ${store.address ? `<div class="store-detail">📍 ${store.address}</div>` : ''}
+          ${store.phone ? `<div class="store-detail">📞 ${store.phone}</div>` : ''}
+        </div>
+      `).join('');
     }
 
     function updateProgress() {
