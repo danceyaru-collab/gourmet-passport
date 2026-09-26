@@ -94,14 +94,6 @@
                 <button onclick="openAddRestaurantModal()" class="bg-michelin-red hover:bg-michelin-redhover text-white px-3.5 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm flex items-center gap-1.5">
                     <i class="fa-solid fa-plus"></i> <span>お店を追加</span>
                 </button>
-
-                <button onclick="exportData()" title="データ保存" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-2.5 py-1.5 rounded-full text-xs transition-all">
-                    <i class="fa-solid fa-download"></i>
-                </button>
-                <button onclick="document.getElementById('importFile').click()" title="データ復元" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-2.5 py-1.5 rounded-full text-xs transition-all">
-                    <i class="fa-solid fa-upload"></i>
-                </button>
-                <input type="file" id="importFile" class="hidden" accept=".json" onchange="importData(event)">
             </div>
         </div>
     </header>
@@ -109,8 +101,7 @@
     <main class="max-w-7xl mx-auto px-4 mt-6">
         
         <div class="flex flex-col md:flex-row justify-between items-center gap-3 mb-6 bg-white p-3 rounded-xl border border-michelin-border shadow-sm">
-            <div class="flex flex-wrap gap-1.5 justify-center" id="categoryFilterContainer">
-                </div>
+            <div class="flex flex-wrap gap-1.5 justify-center" id="categoryFilterContainer"></div>
 
             <div class="relative w-full md:w-64">
                 <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
@@ -118,8 +109,7 @@
             </div>
         </div>
 
-        <div id="restaurantGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-            </div>
+        <div id="restaurantGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5"></div>
     </main>
 
     <div id="categoryModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
@@ -133,13 +123,12 @@
             </h2>
 
             <form onsubmit="addCategory(event)" class="flex gap-2 mb-4">
-                <input type="text" id="newCategoryInput" required placeholder="新しいカテゴリー名（例: カフェ, 中華）" class="flex-1 bg-gray-50 border border-michelin-border rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-michelin-red">
+                <input type="text" id="newCategoryInput" required placeholder="新しいカテゴリー名（例: カフェ）" class="flex-1 bg-gray-50 border border-michelin-border rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-michelin-red">
                 <button type="submit" class="bg-michelin-red hover:bg-michelin-redhover text-white px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap shadow-sm">追加</button>
             </form>
 
             <p class="text-[11px] text-michelin-subtext mb-2">現在設定されているカテゴリー</p>
-            <div id="categoryListContainer" class="space-y-1.5 max-h-48 overflow-y-auto pr-1">
-                </div>
+            <div id="categoryListContainer" class="space-y-1.5 max-h-48 overflow-y-auto pr-1"></div>
 
             <div class="flex justify-end pt-4 mt-4 border-t border-gray-100">
                 <button type="button" onclick="closeModal('categoryModal')" class="px-4 py-1.5 rounded-lg bg-gray-100 text-gray-700 text-xs font-bold">閉じる</button>
@@ -221,8 +210,7 @@
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-gray-700 mb-1">カテゴリー *</label>
-                    <select id="addCategory" class="w-full bg-gray-50 border border-michelin-border rounded-lg p-2 text-xs focus:outline-none focus:border-michelin-red">
-                        </select>
+                    <select id="addCategory" class="w-full bg-gray-50 border border-michelin-border rounded-lg p-2 text-xs focus:outline-none focus:border-michelin-red"></select>
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-gray-700 mb-1">住所・エリア</label>
@@ -245,7 +233,25 @@
         </div>
     </div>
 
-    <script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // 貫路さんのFirebase設定
+        const firebaseConfig = {
+            apiKey: "AIzaSyCR2EdKtZYnnZxB6IawQT2cqe2KdECAmjY",
+            authDomain: "gourmet-passport-f1953.firebaseapp.com",
+            projectId: "gourmet-passport-f1953",
+            storageBucket: "gourmet-passport-f1953.firebasestorage.app",
+            messagingSenderId: "1040647092613",
+            appId: "1:1040647092613:web:12ea90002b271d1983ecec"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // 初期データ定義
+        const defaultCategories = ['おさや行きたいお店', '貫路が行きたいお店', 'イタリアン', 'フレンチ', '和食・その他'];
         const initialRestaurants = [
             { id: 1, name: "酒・肴「赤津庄兵衛」", category: "おさや行きたいお店", address: "東京都杉並区天沼3-11-3 モアビル102", tel: "050-5590-2987", tabelog: "https://tabelog.com/tokyo/A1319/A131906/13209982/" },
             { id: 2, name: "総本家更科堀井 本店", category: "おさや行きたいお店", address: "東京都港区元麻布3-11-4", tel: "03-3403-3401", tabelog: "https://tabelog.com/tokyo/A1307/A130702/13001226/" },
@@ -266,85 +272,81 @@
             { id: 17, name: "マダム・トキ", category: "フレンチ", address: "東京都渋谷区鉢山町14-7", tel: "03-3461-2263", tabelog: "https://tabelog.com/tokyo/A1303/A130303/13001707/" }
         ];
 
-        const defaultCategories = ['おさや行きたいお店', 'イタリアン', 'フレンチ', '和食・その他'];
-
-        let categoriesList = [];
-        let allRestaurants = [];
-        let userUserData = {};
-        let currentFilter = 'all';
-
-        window.onload = function() {
-            loadCategories();
-            loadData();
-            renderCategoryButtons();
-            renderGrid();
-            updateProgress();
-            updateAddCategorySelect();
+        window.appState = {
+            categoriesList: [...defaultCategories],
+            customRestaurants: [],
+            userUserData: {},
+            currentFilter: 'all'
         };
 
-        function loadCategories() {
-            const savedCategories = localStorage.getItem('gourmet_categories');
-            categoriesList = savedCategories ? JSON.parse(savedCategories) : [...defaultCategories];
-        }
+        const docRef = doc(db, "appData", "shared");
 
-        function saveCategories() {
-            localStorage.setItem('gourmet_categories', JSON.stringify(categoriesList));
-            renderCategoryButtons();
-            updateAddCategorySelect();
-            renderCategoryManagementList();
-        }
+        // クラウドからのリアルタイム変更を検知して画面更新
+        onSnapshot(docRef, (docSnap) => {
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                window.appState.categoriesList = data.categoriesList || [...defaultCategories];
+                window.appState.customRestaurants = data.customRestaurants || [];
+                window.appState.userUserData = data.userUserData || {};
+            } else {
+                saveToCloud();
+            }
+            window.renderCategoryButtons();
+            window.updateAddCategorySelect();
+            window.renderGrid();
+            window.updateProgress();
+        });
 
-        function loadData() {
-            const savedCustom = localStorage.getItem('gourmet_custom_restaurants');
-            const customList = savedCustom ? JSON.parse(savedCustom) : [];
-            allRestaurants = [...initialRestaurants, ...customList];
+        window.saveToCloud = async function() {
+            await setDoc(docRef, {
+                categoriesList: window.appState.categoriesList,
+                customRestaurants: window.appState.customRestaurants,
+                userUserData: window.appState.userUserData
+            });
+        };
+    </script>
 
-            const savedUserData = localStorage.getItem('kanji_saya_gourmet_passport');
-            userUserData = savedUserData ? JSON.parse(savedUserData) : {};
-        }
-
-        function saveData() {
-            localStorage.setItem('kanji_saya_gourmet_passport', JSON.stringify(userUserData));
-            updateProgress();
-            renderGrid();
+    <script>
+        function getAllRestaurants() {
+            return [...initialRestaurants, ...(window.appState ? window.appState.customRestaurants : [])];
         }
 
         function renderCategoryButtons() {
             const container = document.getElementById('categoryFilterContainer');
             const systemFilters = ['all', 'visited', 'unvisited'];
-            
-            const labelMap = {
-                'all': 'すべて',
-                'visited': '訪問済み',
-                'unvisited': '未訪問'
-            };
+            const labelMap = { 'all': 'すべて', 'visited': '訪問済み', 'unvisited': '未訪問' };
 
-            let html = systemFilters.map(cat => {
-                const label = labelMap[cat];
-                return `<button onclick="setFilter('${cat}')" id="btn-${cat}" class="filter-btn px-3 py-1 rounded-full text-xs font-semibold border border-michelin-border bg-gray-50 text-gray-700 hover:bg-gray-100 transition-all">
-                    ${label}
-                </button>`;
-            }).join('');
+            let html = systemFilters.map(cat => `
+                <button onclick="setFilter('${cat}')" id="btn-${cat}" class="filter-btn px-3 py-1 rounded-full text-xs font-semibold border border-michelin-border bg-gray-50 text-gray-700 hover:bg-gray-100 transition-all">
+                    ${labelMap[cat]}
+                </button>
+            `).join('');
 
-            html += categoriesList.map(cat => {
-                return `<button onclick="setFilter('${cat}')" id="btn-${cat}" class="filter-btn px-3 py-1 rounded-full text-xs font-semibold border border-michelin-border bg-gray-50 text-gray-700 hover:bg-gray-100 transition-all">
+            const cats = window.appState ? window.appState.categoriesList : [];
+            html += cats.map(cat => `
+                <button onclick="setFilter('${cat}')" id="btn-${cat}" class="filter-btn px-3 py-1 rounded-full text-xs font-semibold border border-michelin-border bg-gray-50 text-gray-700 hover:bg-gray-100 transition-all">
                     ${cat}
-                </button>`;
-            }).join('');
+                </button>
+            `).join('');
 
             container.innerHTML = html;
-            setFilter(currentFilter);
+            setFilter(window.appState ? window.appState.currentFilter : 'all');
         }
 
         function updateAddCategorySelect() {
             const select = document.getElementById('addCategory');
-            select.innerHTML = categoriesList.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+            const cats = window.appState ? window.appState.categoriesList : [];
+            select.innerHTML = cats.map(cat => `<option value="${cat}">${cat}</option>`).join('');
         }
 
         function renderGrid() {
             const grid = document.getElementById('restaurantGrid');
             const searchVal = document.getElementById('searchInput').value.toLowerCase();
             grid.innerHTML = '';
+
+            const allRestaurants = getAllRestaurants();
+            const currentFilter = window.appState ? window.appState.currentFilter : 'all';
+            const userUserData = window.appState ? window.appState.userUserData : {};
 
             const filtered = allRestaurants.filter(r => {
                 const userData = userUserData[r.id] || {};
@@ -361,7 +363,6 @@
                            (r.address && r.address.toLowerCase().includes(searchVal)) ||
                            r.category.toLowerCase().includes(searchVal);
                 }
-
                 return true;
             });
 
@@ -378,9 +379,7 @@
                 card.innerHTML = `
                     <div>
                         <div class="flex justify-between items-start gap-1.5 mb-2">
-                            <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-gray-100 text-gray-700">
-                                ${r.category}
-                            </span>
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-gray-100 text-gray-700">${r.category}</span>
                             ${isVisited ? '<span class="text-[11px] text-michelin-red font-bold flex items-center gap-1"><i class="fa-solid fa-certificate"></i> VISITED</span>' : ''}
                         </div>
                         <h3 class="font-bold text-sm text-gray-900 font-serif leading-snug">${r.name}</h3>
@@ -394,12 +393,8 @@
                             食べログ <i class="fa-solid fa-external-link text-[10px]"></i>
                         </a>
                         ${isVisited ? 
-                            `<div class="w-8 h-8 rounded-full bg-michelin-red text-white flex items-center justify-center text-[9px] font-bold tracking-tighter shadow-sm">
-                                SAVORED
-                             </div>` : 
-                            `<div class="w-7 h-7 rounded-full border border-dashed border-gray-300 flex items-center justify-center text-gray-400 text-[10px]">
-                                未
-                             </div>`
+                            `<div class="w-8 h-8 rounded-full bg-michelin-red text-white flex items-center justify-center text-[9px] font-bold tracking-tighter shadow-sm">SAVORED</div>` : 
+                            `<div class="w-7 h-7 rounded-full border border-dashed border-gray-300 flex items-center justify-center text-gray-400 text-[10px]">未</div>`
                         }
                     </div>
                 `;
@@ -409,27 +404,21 @@
         }
 
         function setFilter(type) {
-            currentFilter = type;
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.classList.remove('filter-btn-active');
-            });
-
+            if (window.appState) window.appState.currentFilter = type;
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('filter-btn-active'));
             const activeBtn = document.getElementById(`btn-${type}`);
-            if (activeBtn) {
-                activeBtn.classList.add('filter-btn-active');
-            }
-
+            if (activeBtn) activeBtn.classList.add('filter-btn-active');
             renderGrid();
         }
 
         function updateProgress() {
+            const allRestaurants = getAllRestaurants();
             const total = allRestaurants.length;
             let visitedCount = 0;
+            const userUserData = window.appState ? window.appState.userUserData : {};
 
             allRestaurants.forEach(r => {
-                if (userUserData[r.id] && userUserData[r.id].visited) {
-                    visitedCount++;
-                }
+                if (userUserData[r.id] && userUserData[r.id].visited) visitedCount++;
             });
 
             const pct = total > 0 ? Math.round((visitedCount / total) * 100) : 0;
@@ -437,7 +426,6 @@
             document.getElementById('progressBar').style.width = `${pct}%`;
         }
 
-        // カテゴリー管理モーダル関連
         function openCategoryModal() {
             renderCategoryManagementList();
             document.getElementById('categoryModal').classList.remove('hidden');
@@ -445,7 +433,8 @@
 
         function renderCategoryManagementList() {
             const container = document.getElementById('categoryListContainer');
-            container.innerHTML = categoriesList.map((cat, idx) => `
+            const cats = window.appState ? window.appState.categoriesList : [];
+            container.innerHTML = cats.map((cat, idx) => `
                 <div class="flex justify-between items-center bg-gray-50 p-2 rounded-lg border border-michelin-border text-xs">
                     <span class="font-medium text-gray-800">${cat}</span>
                     <button onclick="removeCategory(${idx})" class="text-red-500 hover:text-red-700 text-xs px-1.5 py-0.5">
@@ -459,23 +448,26 @@
             e.preventDefault();
             const input = document.getElementById('newCategoryInput');
             const name = input.value.trim();
-            if (name && !categoriesList.includes(name)) {
-                categoriesList.push(name);
-                saveCategories();
+            if (name && !window.appState.categoriesList.includes(name)) {
+                window.appState.categoriesList.push(name);
+                window.saveToCloud();
                 input.value = '';
+                renderCategoryManagementList();
             }
         }
 
         function removeCategory(idx) {
-            if (confirm(`カテゴリー「${categoriesList[idx]}」を削除しますか？`)) {
-                categoriesList.splice(idx, 1);
-                saveCategories();
+            if (confirm(`カテゴリー「${window.appState.categoriesList[idx]}」を削除しますか？`)) {
+                window.appState.categoriesList.splice(idx, 1);
+                window.saveToCloud();
+                renderCategoryManagementList();
             }
         }
 
         function openStampModal(id) {
+            const allRestaurants = getAllRestaurants();
             const r = allRestaurants.find(x => x.id === id);
-            const data = userUserData[id] || {};
+            const data = (window.appState && window.appState.userUserData[id]) || {};
 
             document.getElementById('modalRestaurantId').value = id;
             document.getElementById('modalTitle').innerText = r.name;
@@ -529,13 +521,13 @@
             const id = parseInt(document.getElementById('modalRestaurantId').value);
             const isVisited = document.getElementById('modalVisited').checked;
 
-            userUserData[id] = {
+            window.appState.userUserData[id] = {
                 visited: isVisited,
                 date: document.getElementById('modalDate').value,
                 notes: document.getElementById('modalNotes').value
             };
 
-            saveData();
+            window.saveToCloud();
             closeModal('stampModal');
         }
 
@@ -551,14 +543,8 @@
                 tabelog: document.getElementById('addTabelog').value || '#'
             };
 
-            const savedCustom = localStorage.getItem('gourmet_custom_restaurants');
-            const customList = savedCustom ? JSON.parse(savedCustom) : [];
-            customList.push(newRes);
-            localStorage.setItem('gourmet_custom_restaurants', JSON.stringify(customList));
-
-            loadData();
-            updateProgress();
-            renderGrid();
+            window.appState.customRestaurants.push(newRes);
+            window.saveToCloud();
 
             e.target.reset();
             closeModal('addRestaurantModal');
@@ -568,62 +554,11 @@
             const id = parseInt(document.getElementById('modalRestaurantId').value);
             if (!confirm('このお店を削除しますか？')) return;
 
-            const savedCustom = localStorage.getItem('gourmet_custom_restaurants');
-            if (savedCustom) {
-                let customList = JSON.parse(savedCustom);
-                customList = customList.filter(x => x.id !== id);
-                localStorage.setItem('gourmet_custom_restaurants', JSON.stringify(customList));
-            }
-
-            delete userUserData[id];
-            saveData();
-            loadData();
-            renderGrid();
-            updateProgress();
+            window.appState.customRestaurants = window.appState.customRestaurants.filter(x => x.id !== id);
+            delete window.appState.userUserData[id];
+            
+            window.saveToCloud();
             closeModal('stampModal');
-        }
-
-        function exportData() {
-            const exportPayload = {
-                userData: userUserData,
-                categories: categoriesList,
-                customRestaurants: JSON.parse(localStorage.getItem('gourmet_custom_restaurants') || '[]')
-            };
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportPayload, null, 2));
-            const dlAnchorElem = document.createElement('a');
-            dlAnchorElem.setAttribute("href", dataStr);
-            dlAnchorElem.setAttribute("download", `gourmet_passport_backup_${new Date().toISOString().slice(0,10)}.json`);
-            dlAnchorElem.click();
-        }
-
-        function importData(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(evt) {
-                try {
-                    const imported = JSON.parse(evt.target.result);
-                    if (imported.userData) {
-                        userUserData = imported.userData;
-                        if (imported.categories) {
-                            categoriesList = imported.categories;
-                            saveCategories();
-                        }
-                        localStorage.setItem('gourmet_custom_restaurants', JSON.stringify(imported.customRestaurants || []));
-                    } else {
-                        userUserData = imported;
-                    }
-                    saveData();
-                    loadData();
-                    renderGrid();
-                    updateProgress();
-                    alert('データを復元しました！');
-                } catch(err) {
-                    alert('ファイルの読み込みに失敗しました。');
-                }
-            };
-            reader.readAsText(file);
         }
     </script>
 </body>
