@@ -95,12 +95,15 @@
         <div class="bg-white border border-michelin-border rounded-2xl max-w-md w-full p-6 relative text-michelin-text shadow-xl">
             <button onclick="closeModal('categoryModal')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl"><i class="fa-solid fa-xmark"></i></button>
             <h2 class="text-lg font-bold font-serif text-gray-900 mb-3 border-b border-gray-100 pb-2"><i class="fa-solid fa-tags text-michelin-red mr-1.5"></i>カテゴリーの追加・管理</h2>
+            
             <form onsubmit="addCategory(event)" class="flex gap-2 mb-4">
                 <input type="text" id="newCategoryInput" required placeholder="新しいカテゴリー名（例: カフェ）" class="flex-1 bg-gray-50 border border-michelin-border rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-michelin-red">
                 <button type="submit" class="bg-michelin-red hover:bg-michelin-redhover text-white px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap shadow-sm">追加</button>
             </form>
-            <p class="text-[11px] text-michelin-subtext mb-2">現在設定されているカテゴリー</p>
-            <div id="categoryListContainer" class="space-y-1.5 max-h-48 overflow-y-auto pr-1"></div>
+
+            <p class="text-[11px] text-michelin-subtext mb-2">登録中のカテゴリー（名前変更・削除が可能です）</p>
+            <div id="categoryListContainer" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
+
             <div class="flex justify-end pt-4 mt-4 border-t border-gray-100">
                 <button type="button" onclick="closeModal('categoryModal')" class="px-4 py-1.5 rounded-lg bg-gray-100 text-gray-700 text-xs font-bold">閉じる</button>
             </div>
@@ -254,11 +257,9 @@
                     window.appState.customRestaurants = data.customRestaurants;
                     window.appState.userUserData = data.userUserData || {};
                 } else {
-                    // データベースが空なら初期データを投入
                     await window.saveToCloud();
                 }
             } else {
-                // ドキュメントが存在しない場合も初期データを強制書き込み
                 await window.saveToCloud();
             }
             window.renderCategoryButtons();
@@ -267,7 +268,6 @@
             window.updateProgress();
         }, (error) => {
             console.error("Snapshot error:", error);
-            // エラー時（権限エラー等）も画面だけは初期データで描画
             window.renderCategoryButtons();
             window.updateAddCategorySelect();
             window.renderGrid();
@@ -403,11 +403,15 @@
         function renderCategoryManagementList() {
             const container = document.getElementById('categoryListContainer');
             const cats = window.appState ? window.appState.categoriesList : [];
+            
             container.innerHTML = cats.map((cat, idx) => `
-                <div class="flex justify-between items-center bg-gray-50 p-2 rounded-lg border border-michelin-border text-xs">
-                    <span class="font-medium text-gray-800">${cat}</span>
-                    <button onclick="removeCategory(${idx})" class="text-red-500 hover:text-red-700 text-xs px-1.5 py-0.5">
-                        <i class="fa-solid fa-trash"></i>
+                <div class="flex items-center gap-2 bg-gray-50 p-2 rounded-lg border border-michelin-border text-xs">
+                    <input type="text" value="${cat}" id="cat-input-${idx}" class="flex-1 bg-white border border-gray-200 rounded px-2 py-1 text-xs focus:outline-none focus:border-michelin-red">
+                    <button onclick="updateCategoryName(${idx})" class="text-blue-600 hover:text-blue-800 font-bold px-2 py-1 bg-blue-50 rounded border border-blue-200 text-[11px]">
+                        保存
+                    </button>
+                    <button onclick="removeCategory(${idx})" class="text-red-500 hover:text-red-700 px-2 py-1 bg-red-50 rounded border border-red-200 text-[11px]">
+                        削除
                     </button>
                 </div>
             `).join('');
@@ -425,9 +429,44 @@
             }
         }
 
+        function updateCategoryName(idx) {
+            const oldName = window.appState.categoriesList[idx];
+            const newName = document.getElementById(`cat-input-${idx}`).value.trim();
+
+            if (!newName) {
+                alert('カテゴリー名を入力してください');
+                return;
+            }
+
+            if (oldName === newName) return;
+
+            window.appState.categoriesList[idx] = newName;
+
+            // 登録されているお店のカテゴリー名も更新する
+            window.appState.customRestaurants.forEach(r => {
+                if (r.category === oldName) {
+                    r.category = newName;
+                }
+            });
+
+            if (window.appState.currentFilter === oldName) {
+                window.appState.currentFilter = newName;
+            }
+
+            window.saveToCloud();
+            renderCategoryManagementList();
+            alert(`「${oldName}」を「${newName}」に変更しました`);
+        }
+
         function removeCategory(idx) {
-            if (confirm(`カテゴリー「${window.appState.categoriesList[idx]}」を削除しますか？`)) {
+            const catName = window.appState.categoriesList[idx];
+            if (confirm(`カテゴリー「${catName}」を削除しますか？\n（このカテゴリーに属するお店のカテゴリー表記もリセットされます）`)) {
                 window.appState.categoriesList.splice(idx, 1);
+                
+                if (window.appState.currentFilter === catName) {
+                    window.appState.currentFilter = 'all';
+                }
+
                 window.saveToCloud();
                 renderCategoryManagementList();
             }
