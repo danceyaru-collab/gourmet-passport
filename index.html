@@ -36,38 +36,19 @@
     </script>
 
     <style>
-        body {
-            background-color: #f8f9fa;
-            color: #2d3748;
-            font-family: 'Noto Sans JP', sans-serif;
-        }
-
+        body { background-color: #f8f9fa; color: #2d3748; font-family: 'Noto Sans JP', sans-serif; }
         .michelin-card {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-            transition: all 0.25s ease;
+            background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04); transition: all 0.25s ease;
         }
-
-        .michelin-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.1);
-            border-color: #cbd5e0;
-        }
-
-        .filter-btn-active {
-            background-color: #2d3748 !important;
-            color: #ffffff !important;
-            border-color: #2d3748 !important;
-        }
+        .michelin-card:hover { transform: translateY(-4px); box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.1); border-color: #cbd5e0; }
+        .filter-btn-active { background-color: #2d3748 !important; color: #ffffff !important; border-color: #2d3748 !important; }
     </style>
 </head>
 <body class="min-h-screen pb-16">
 
     <header class="border-b border-michelin-border bg-white sticky top-0 z-30 px-4 py-3 shadow-sm">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-            
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-lg bg-michelin-red flex items-center justify-center text-white shadow-sm">
                     <i class="fa-solid fa-utensils text-lg"></i>
@@ -99,10 +80,8 @@
     </header>
 
     <main class="max-w-7xl mx-auto px-4 mt-6">
-        
         <div class="flex flex-col md:flex-row justify-between items-center gap-3 mb-6 bg-white p-3 rounded-xl border border-michelin-border shadow-sm">
             <div class="flex flex-wrap gap-1.5 justify-center" id="categoryFilterContainer"></div>
-
             <div class="relative w-full md:w-64">
                 <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
                 <input type="text" id="searchInput" oninput="renderGrid()" placeholder="店名やエリアで検索..." class="w-full bg-gray-50 border border-michelin-border rounded-full pl-8 pr-4 py-1.5 text-xs text-michelin-text placeholder-gray-400 focus:outline-none focus:border-michelin-red">
@@ -114,22 +93,14 @@
 
     <div id="categoryModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white border border-michelin-border rounded-2xl max-w-md w-full p-6 relative text-michelin-text shadow-xl">
-            <button onclick="closeModal('categoryModal')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-
-            <h2 class="text-lg font-bold font-serif text-gray-900 mb-3 border-b border-gray-100 pb-2">
-                <i class="fa-solid fa-tags text-michelin-red mr-1.5"></i>カテゴリーの追加・管理
-            </h2>
-
+            <button onclick="closeModal('categoryModal')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl"><i class="fa-solid fa-xmark"></i></button>
+            <h2 class="text-lg font-bold font-serif text-gray-900 mb-3 border-b border-gray-100 pb-2"><i class="fa-solid fa-tags text-michelin-red mr-1.5"></i>カテゴリーの追加・管理</h2>
             <form onsubmit="addCategory(event)" class="flex gap-2 mb-4">
                 <input type="text" id="newCategoryInput" required placeholder="新しいカテゴリー名（例: カフェ）" class="flex-1 bg-gray-50 border border-michelin-border rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-michelin-red">
                 <button type="submit" class="bg-michelin-red hover:bg-michelin-redhover text-white px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap shadow-sm">追加</button>
             </form>
-
             <p class="text-[11px] text-michelin-subtext mb-2">現在設定されているカテゴリー</p>
             <div id="categoryListContainer" class="space-y-1.5 max-h-48 overflow-y-auto pr-1"></div>
-
             <div class="flex justify-end pt-4 mt-4 border-t border-gray-100">
                 <button type="button" onclick="closeModal('categoryModal')" class="px-4 py-1.5 rounded-lg bg-gray-100 text-gray-700 text-xs font-bold">閉じる</button>
             </div>
@@ -138,10 +109,7 @@
 
     <div id="stampModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white border border-michelin-border rounded-2xl max-w-lg w-full p-6 relative text-michelin-text shadow-xl">
-            <button onclick="closeModal('stampModal')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-
+            <button onclick="closeModal('stampModal')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl"><i class="fa-solid fa-xmark"></i></button>
             <div class="border-b border-gray-100 pb-4 mb-4">
                 <span id="modalCategory" class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 text-michelin-red mb-1.5">カテゴリー</span>
                 <h2 id="modalTitle" class="text-xl font-bold font-serif text-gray-900">店名</h2>
@@ -151,10 +119,8 @@
                     <i class="fa-solid fa-arrow-up-right-from-square mr-1"></i> 食べログで詳細を見る
                 </a>
             </div>
-
             <form onsubmit="saveStamp(event)" class="space-y-4">
                 <input type="hidden" id="modalRestaurantId">
-
                 <div class="flex items-center justify-between bg-gray-50 p-3.5 rounded-xl border border-michelin-border">
                     <div class="flex items-center gap-2.5">
                         <i class="fa-solid fa-utensils text-lg text-michelin-red"></i>
@@ -168,7 +134,6 @@
                         <div class="w-12 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-michelin-red"></div>
                     </label>
                 </div>
-
                 <div id="visitedFields" class="space-y-3">
                     <div>
                         <label class="block text-xs font-bold text-gray-700 mb-1">来店日</label>
@@ -179,11 +144,8 @@
                         <textarea id="modalNotes" rows="3" placeholder="おすすめ料理や感想を記録..." class="w-full bg-gray-50 border border-michelin-border rounded-lg p-2 text-xs text-michelin-text focus:outline-none focus:border-michelin-red"></textarea>
                     </div>
                 </div>
-
                 <div class="flex justify-between items-center pt-3 border-t border-gray-100">
-                    <button type="button" onclick="deleteCustomRestaurant()" id="btnDeleteCustom" class="text-xs text-red-500 hover:underline hidden">
-                        <i class="fa-solid fa-trash mr-1"></i> 削除
-                    </button>
+                    <button type="button" onclick="deleteCustomRestaurant()" id="btnDeleteCustom" class="text-xs text-red-500 hover:underline hidden"><i class="fa-solid fa-trash mr-1"></i> 削除</button>
                     <div class="flex gap-2 ml-auto">
                         <button type="button" onclick="closeModal('stampModal')" class="px-3.5 py-1.5 rounded-lg border border-gray-300 text-gray-600 text-xs font-medium">キャンセル</button>
                         <button type="submit" class="px-4 py-1.5 rounded-lg bg-michelin-red text-white font-bold text-xs shadow-sm">保存する</button>
@@ -195,14 +157,8 @@
 
     <div id="addRestaurantModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white border border-michelin-border rounded-2xl max-w-lg w-full p-6 relative text-michelin-text shadow-xl">
-            <button onclick="closeModal('addRestaurantModal')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-
-            <h2 class="text-lg font-bold font-serif text-gray-900 mb-3 border-b border-gray-100 pb-2">
-                <i class="fa-solid fa-plus-circle text-michelin-red mr-1.5"></i>新しいお店を追加
-            </h2>
-
+            <button onclick="closeModal('addRestaurantModal')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl"><i class="fa-solid fa-xmark"></i></button>
+            <h2 class="text-lg font-bold font-serif text-gray-900 mb-3 border-b border-gray-100 pb-2"><i class="fa-solid fa-plus-circle text-michelin-red mr-1.5"></i>新しいお店を追加</h2>
             <form onsubmit="addNewRestaurant(event)" class="space-y-3">
                 <div>
                     <label class="block text-xs font-bold text-gray-700 mb-1">店名 *</label>
@@ -224,7 +180,6 @@
                     <label class="block text-xs font-bold text-gray-700 mb-1">食べログ等のURL</label>
                     <input type="url" id="addTabelog" placeholder="https://tabelog.com/..." class="w-full bg-gray-50 border border-michelin-border rounded-lg p-2 text-xs focus:outline-none focus:border-michelin-red">
                 </div>
-
                 <div class="flex justify-end gap-2 pt-3 border-t border-gray-100">
                     <button type="button" onclick="closeModal('addRestaurantModal')" class="px-3.5 py-1.5 rounded-lg border border-gray-300 text-gray-600 text-xs font-medium">キャンセル</button>
                     <button type="submit" class="px-4 py-1.5 rounded-lg bg-michelin-red hover:bg-michelin-redhover text-white font-bold text-xs shadow-sm">追加する</button>
@@ -237,7 +192,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // 貫路さんのFirebase設定
         const firebaseConfig = {
             apiKey: "AIzaSyCR2EdKtZYnnZxB6IawQT2cqe2KdECAmjY",
             authDomain: "gourmet-passport-f1953.firebaseapp.com",
@@ -250,7 +204,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // 初期データ定義
         const defaultCategories = ['おさや行きたいお店', '貫路が行きたいお店', 'イタリアン', 'フレンチ', '和食・その他'];
         const initialRestaurants = [
             { id: 1, name: "酒・肴「赤津庄兵衛」", category: "おさや行きたいお店", address: "東京都杉並区天沼3-11-3 モアビル102", tel: "050-5590-2987", tabelog: "https://tabelog.com/tokyo/A1319/A131906/13209982/" },
@@ -269,27 +222,27 @@
             { id: 14, name: "sio", category: "フレンチ", address: "東京都渋谷区上原1-35-3", tel: "03-6804-7607", tabelog: "https://tabelog.com/tokyo/A1318/A131811/13150395/" },
             { id: 15, name: "プレヴナンス", category: "フレンチ", address: "東京都港区南青山2-13-7 マトリス 1F", tel: "050-5590-5273", tabelog: "https://tabelog.com/tokyo/A1306/A130603/13162493/" },
             { id: 16, name: "渡辺料理店", category: "フレンチ", address: "東京都江東区富岡1-2-9 1F", tel: "03-6381-8899", tabelog: "https://tabelog.com/tokyo/A1313/A131303/13274535/" },
-            { id: 17, name: "マダム・トキ", category: "フレンチ", address: "東京都渋谷区鉢山町14-7", tel: "03-3461-2263", tabelog: "https://tabelog.com/tokyo/A1303/A130303/13001707/" }
+            { id: 17, name: "マダム・トキ", category: "フレンチ", address: "東京都渋谷区鉢山町14-7", tel: "03-3461-2263", tabelog: "https://tabelog.com/tokyo/A1300/A130303/13001707/" }
         ];
 
         window.appState = {
             categoriesList: [...defaultCategories],
-            customRestaurants: [],
+            customRestaurants: [...initialRestaurants],
             userUserData: {},
             currentFilter: 'all'
         };
 
         const docRef = doc(db, "appData", "shared");
 
-        // クラウドからのリアルタイム変更を検知して画面更新
-        onSnapshot(docRef, (docSnap) => {
+        onSnapshot(docRef, async (docSnap) => {
             if (docSnap.exists()) {
                 const data = docSnap.data();
                 window.appState.categoriesList = data.categoriesList || [...defaultCategories];
-                window.appState.customRestaurants = data.customRestaurants || [];
+                window.appState.customRestaurants = data.customRestaurants || [...initialRestaurants];
                 window.appState.userUserData = data.userUserData || {};
             } else {
-                saveToCloud();
+                // 初回は初期データを保存
+                await window.saveToCloud();
             }
             window.renderCategoryButtons();
             window.updateAddCategorySelect();
@@ -308,7 +261,7 @@
 
     <script>
         function getAllRestaurants() {
-            return [...initialRestaurants, ...(window.appState ? window.appState.customRestaurants : [])];
+            return window.appState ? window.appState.customRestaurants : [];
         }
 
         function renderCategoryButtons() {
