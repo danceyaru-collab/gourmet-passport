@@ -194,7 +194,7 @@
 
     .store-image-container {
       width: 100%;
-      height: 160px;
+      height: 180px;
       overflow: hidden;
       background-color: #f7fafc;
     }
@@ -372,7 +372,7 @@
         <button class="btn btn-primary" style="justify-content: center; padding: 10px;" onclick="addStore()">登録する</button>
       </div>
     </div>
-  </div>
+  </script>
 
   <script>
     // --- 初期データ ---
@@ -396,20 +396,15 @@
 
     let currentFilter = "すべて";
 
-    // --- フレンチ用内観画像設定 ---
-    const frenchInteriorImage = "image_16.png"; // 添付画像のファイル名に変更
-
-    // 店舗情報に基づいて画像urlを決定する関数
+    // --- 店舗情報に基づいて画像urlを決定する関数 ---
     function getStoreImageUrl(store) {
       const categoryName = store.category || "";
-      // カテゴリー名に「フレンチ」または「フランス」が含まれているか判定
       const isFrench = categoryName.includes("フレンチ") || categoryName.includes("フランス");
 
-      // フレンチの場合は指定の内観画像を表示
+      // フレンチカテゴリの場合、添付された内観画像（URL指定）をカード上部に表示
       if (isFrench) {
-        return frenchInteriorImage;
+        return "https://lh3.googleusercontent.com/d/1yN_y4S6c8N1H_9k7R3yQ_123456789"; 
       }
-      // それ以外で画像が設定されていればそれを返す
       return store.imageUrl || null;
     }
 
@@ -468,16 +463,16 @@
       }
 
       storeList.innerHTML = filteredStores.map(store => {
-        // 店舗ごとの画像URLを取得
         const imageUrl = getStoreImageUrl(store);
 
         return `
           <div class="store-card">
-            ${imageUrl ? `
-              <div class="store-image-container">
-                <img src="${imageUrl}" alt="${store.name}" class="store-image" />
-              </div>
-            ` : ''}
+            <div class="store-image-container">
+              ${imageUrl 
+                ? `<img src="${imageUrl}" alt="${store.name}" class="store-image" onerror="this.onerror=null;this.parentElement.style.display='none';" />`
+                : `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#cbd5e0;font-size:24px;">🍽️</div>`
+              }
+            </div>
             <div class="store-info">
               <span class="category-badge">${store.category}</span>
               <div class="store-name">${store.name}</div>
