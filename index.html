@@ -234,29 +234,45 @@
 
         const docRef = doc(db, "appData", "shared");
 
+        window.saveToCloud = async function() {
+            try {
+                await setDoc(docRef, {
+                    categoriesList: window.appState.categoriesList,
+                    customRestaurants: window.appState.customRestaurants,
+                    userUserData: window.appState.userUserData
+                });
+            } catch (e) {
+                console.error("Save error:", e);
+            }
+        };
+
         onSnapshot(docRef, async (docSnap) => {
             if (docSnap.exists()) {
                 const data = docSnap.data();
-                window.appState.categoriesList = data.categoriesList || [...defaultCategories];
-                window.appState.customRestaurants = data.customRestaurants || [...initialRestaurants];
-                window.appState.userUserData = data.userUserData || {};
+                if (data.customRestaurants && data.customRestaurants.length > 0) {
+                    window.appState.categoriesList = data.categoriesList || [...defaultCategories];
+                    window.appState.customRestaurants = data.customRestaurants;
+                    window.appState.userUserData = data.userUserData || {};
+                } else {
+                    // データベースが空なら初期データを投入
+                    await window.saveToCloud();
+                }
             } else {
-                // 初回は初期データを保存
+                // ドキュメントが存在しない場合も初期データを強制書き込み
                 await window.saveToCloud();
             }
             window.renderCategoryButtons();
             window.updateAddCategorySelect();
             window.renderGrid();
             window.updateProgress();
+        }, (error) => {
+            console.error("Snapshot error:", error);
+            // エラー時（権限エラー等）も画面だけは初期データで描画
+            window.renderCategoryButtons();
+            window.updateAddCategorySelect();
+            window.renderGrid();
+            window.updateProgress();
         });
-
-        window.saveToCloud = async function() {
-            await setDoc(docRef, {
-                categoriesList: window.appState.categoriesList,
-                customRestaurants: window.appState.customRestaurants,
-                userUserData: window.appState.userUserData
-            });
-        };
     </script>
 
     <script>
