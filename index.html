@@ -17,13 +17,13 @@
                 extend: {
                     colors: {
                         michelin: {
-                            red: '#e21b23',       // 公式ミシュランレッド
+                            red: '#e21b23',
                             redhover: '#c4121a',
-                            bg: '#f8f9fa',        // 明るいライトグレー背景
-                            card: '#ffffff',      // 純白カード
-                            text: '#2d3748',      // ダークグレー文字
-                            subtext: '#718096',   // 補足文字
-                            border: '#e2e8f0'     // 薄い枠線
+                            bg: '#f8f9fa',
+                            card: '#ffffff',
+                            text: '#2d3748',
+                            subtext: '#718096',
+                            border: '#e2e8f0'
                         }
                     },
                     fontFamily: {
@@ -78,23 +78,27 @@
                 </div>
             </div>
 
-            <div class="flex flex-wrap items-center gap-3">
-                <div class="bg-gray-50 px-4 py-1.5 rounded-full border border-michelin-border flex items-center gap-3">
+            <div class="flex flex-wrap items-center gap-2.5">
+                <div class="bg-gray-50 px-3.5 py-1.5 rounded-full border border-michelin-border flex items-center gap-3">
                     <span class="text-xs text-michelin-subtext font-medium">制覇率</span>
                     <span id="visitedCountText" class="text-sm font-bold text-michelin-red">0 / 0</span>
-                    <div class="w-20 bg-gray-200 h-2 rounded-full overflow-hidden">
+                    <div class="w-16 bg-gray-200 h-2 rounded-full overflow-hidden">
                         <div id="progressBar" class="bg-michelin-red h-full transition-all duration-500 w-0"></div>
                     </div>
                 </div>
+
+                <button onclick="openCategoryModal()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-full text-xs font-bold transition-all border border-gray-300 flex items-center gap-1">
+                    <i class="fa-solid fa-tags text-gray-500"></i> カテゴリー管理
+                </button>
 
                 <button onclick="openAddRestaurantModal()" class="bg-michelin-red hover:bg-michelin-redhover text-white px-3.5 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm flex items-center gap-1.5">
                     <i class="fa-solid fa-plus"></i> <span>お店を追加</span>
                 </button>
 
-                <button onclick="exportData()" title="データ保存" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-full text-xs transition-all">
+                <button onclick="exportData()" title="データ保存" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-2.5 py-1.5 rounded-full text-xs transition-all">
                     <i class="fa-solid fa-download"></i>
                 </button>
-                <button onclick="document.getElementById('importFile').click()" title="データ復元" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-full text-xs transition-all">
+                <button onclick="document.getElementById('importFile').click()" title="データ復元" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-2.5 py-1.5 rounded-full text-xs transition-all">
                     <i class="fa-solid fa-upload"></i>
                 </button>
                 <input type="file" id="importFile" class="hidden" accept=".json" onchange="importData(event)">
@@ -117,6 +121,31 @@
         <div id="restaurantGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
             </div>
     </main>
+
+    <div id="categoryModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white border border-michelin-border rounded-2xl max-w-md w-full p-6 relative text-michelin-text shadow-xl">
+            <button onclick="closeModal('categoryModal')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <h2 class="text-lg font-bold font-serif text-gray-900 mb-3 border-b border-gray-100 pb-2">
+                <i class="fa-solid fa-tags text-michelin-red mr-1.5"></i>カテゴリーの追加・管理
+            </h2>
+
+            <form onsubmit="addCategory(event)" class="flex gap-2 mb-4">
+                <input type="text" id="newCategoryInput" required placeholder="新しいカテゴリー名（例: カフェ, 中華）" class="flex-1 bg-gray-50 border border-michelin-border rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-michelin-red">
+                <button type="submit" class="bg-michelin-red hover:bg-michelin-redhover text-white px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap shadow-sm">追加</button>
+            </form>
+
+            <p class="text-[11px] text-michelin-subtext mb-2">現在設定されているカテゴリー</p>
+            <div id="categoryListContainer" class="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                </div>
+
+            <div class="flex justify-end pt-4 mt-4 border-t border-gray-100">
+                <button type="button" onclick="closeModal('categoryModal')" class="px-4 py-1.5 rounded-lg bg-gray-100 text-gray-700 text-xs font-bold">閉じる</button>
+            </div>
+        </div>
+    </div>
 
     <div id="stampModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white border border-michelin-border rounded-2xl max-w-lg w-full p-6 relative text-michelin-text shadow-xl">
@@ -193,11 +222,7 @@
                 <div>
                     <label class="block text-xs font-bold text-gray-700 mb-1">カテゴリー *</label>
                     <select id="addCategory" class="w-full bg-gray-50 border border-michelin-border rounded-lg p-2 text-xs focus:outline-none focus:border-michelin-red">
-                        <option value="おさや行きたいお店">おさや行きたいお店</option>
-                        <option value="イタリアン">イタリアン</option>
-                        <option value="フレンチ">フレンチ</option>
-                        <option value="和食・その他">和食・その他</option>
-                    </select>
+                        </select>
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-gray-700 mb-1">住所・エリア</label>
@@ -222,21 +247,16 @@
 
     <script>
         const initialRestaurants = [
-            // おさやの最近ガチ行きたいお店
             { id: 1, name: "酒・肴「赤津庄兵衛」", category: "おさや行きたいお店", address: "東京都杉並区天沼3-11-3 モアビル102", tel: "050-5590-2987", tabelog: "https://tabelog.com/tokyo/A1319/A131906/13209982/" },
             { id: 2, name: "総本家更科堀井 本店", category: "おさや行きたいお店", address: "東京都港区元麻布3-11-4", tel: "03-3403-3401", tabelog: "https://tabelog.com/tokyo/A1307/A130702/13001226/" },
             { id: 3, name: "Wineshop & Diner FUJIMARU 浅草橋店", category: "おさや行きたいお店", address: "東京都中央区東日本橋2-27-19 Ｓビル 2F", tel: "050-5593-6109", tabelog: "https://tabelog.com/tokyo/A1311/A131103/13167076/" },
             { id: 4, name: "浅草橋ワインバル八十郎商店", category: "おさや行きたいお店", address: "東京都台東区浅草橋1-18-4", tel: "050-5600-4912", tabelog: "https://tabelog.com/tokyo/A1311/A131103/13284282/" },
             { id: 5, name: "屋根裏のパリ食堂", category: "おさや行きたいお店", address: "東京都目黒区青葉台1-17-2 青葉台117ビル 3F", tel: "050-5872-2297", tabelog: "https://tabelog.com/tokyo/A1317/A131701/13141729/" },
-
-            // 大将軍がいま行きたいイタリアン5選
             { id: 6, name: "ポンテ デル ピアット", category: "イタリアン", address: "東京都渋谷区広尾5-19-7 協和ビル 1F", tel: "03-3473-0707", tabelog: "https://tabelog.com/tokyo/A1307/A130703/13166111/" },
             { id: 7, name: "アッピア 本店", category: "イタリアン", address: "東京都港区南麻布4-11-35 インペリアル広尾 B101", tel: "03-3444-5801", tabelog: "https://tabelog.com/tokyo/A1307/A130703/13001593/" },
             { id: 8, name: "リストランテ アクアパッツァ", category: "イタリアン", address: "東京都港区南青山2-27-18 青山エムズタワーパサージュ青山 2F", tel: "050-5869-3542", tabelog: "https://tabelog.com/tokyo/A1306/A130603/13004578/" },
             { id: 9, name: "トラットリア タンタボッカ", category: "イタリアン", address: "東京都渋谷区千駄ヶ谷4-5-1 ニュー外苑ハイツ 1F", tel: "050-3187-6924", tabelog: "https://tabelog.com/tokyo/A1304/A130403/13058484/" },
             { id: 10, name: "ラ・ベットラ・ダ・オチアイ", category: "イタリアン", address: "東京都中央区銀座1-21-2", tel: "03-3567-5656", tabelog: "https://tabelog.com/tokyo/A1313/A131301/13002504/" },
-
-            // 大将軍がいま行きたいフレンチ
             { id: 11, name: "レストラン ナズ", category: "フレンチ", address: "長野県北佐久郡軽井沢町追分138-1", tel: "0267-46-8840", tabelog: "https://tabelog.com/nagano/A2003/A200301/20028578/" },
             { id: 12, name: "アマラントス", category: "フレンチ", address: "東京都中央区銀座5-6-7 SANWA すずらん Bldg.９F", tel: "050-5596-4560", tabelog: "https://tabelog.com/tokyo/A1301/A130101/13307700/" },
             { id: 13, name: "モノリス", category: "フレンチ", address: "東京都渋谷区渋谷2-6-1 ウィンド渋谷 1F", tel: "050-5595-1221", tabelog: "https://tabelog.com/tokyo/A1303/A130301/13108686/" },
@@ -246,16 +266,33 @@
             { id: 17, name: "マダム・トキ", category: "フレンチ", address: "東京都渋谷区鉢山町14-7", tel: "03-3461-2263", tabelog: "https://tabelog.com/tokyo/A1303/A130303/13001707/" }
         ];
 
+        const defaultCategories = ['おさや行きたいお店', 'イタリアン', 'フレンチ', '和食・その他'];
+
+        let categoriesList = [];
         let allRestaurants = [];
         let userUserData = {};
         let currentFilter = 'all';
 
         window.onload = function() {
+            loadCategories();
             loadData();
             renderCategoryButtons();
             renderGrid();
             updateProgress();
+            updateAddCategorySelect();
         };
+
+        function loadCategories() {
+            const savedCategories = localStorage.getItem('gourmet_categories');
+            categoriesList = savedCategories ? JSON.parse(savedCategories) : [...defaultCategories];
+        }
+
+        function saveCategories() {
+            localStorage.setItem('gourmet_categories', JSON.stringify(categoriesList));
+            renderCategoryButtons();
+            updateAddCategorySelect();
+            renderCategoryManagementList();
+        }
 
         function loadData() {
             const savedCustom = localStorage.getItem('gourmet_custom_restaurants');
@@ -274,7 +311,7 @@
 
         function renderCategoryButtons() {
             const container = document.getElementById('categoryFilterContainer');
-            const categories = ['all', 'おさや行きたいお店', 'イタリアン', 'フレンチ', '和食・その他', 'visited', 'unvisited'];
+            const systemFilters = ['all', 'visited', 'unvisited'];
             
             const labelMap = {
                 'all': 'すべて',
@@ -282,14 +319,26 @@
                 'unvisited': '未訪問'
             };
 
-            container.innerHTML = categories.map(cat => {
-                const label = labelMap[cat] || cat;
+            let html = systemFilters.map(cat => {
+                const label = labelMap[cat];
                 return `<button onclick="setFilter('${cat}')" id="btn-${cat}" class="filter-btn px-3 py-1 rounded-full text-xs font-semibold border border-michelin-border bg-gray-50 text-gray-700 hover:bg-gray-100 transition-all">
                     ${label}
                 </button>`;
             }).join('');
 
-            setFilter('all');
+            html += categoriesList.map(cat => {
+                return `<button onclick="setFilter('${cat}')" id="btn-${cat}" class="filter-btn px-3 py-1 rounded-full text-xs font-semibold border border-michelin-border bg-gray-50 text-gray-700 hover:bg-gray-100 transition-all">
+                    ${cat}
+                </button>`;
+            }).join('');
+
+            container.innerHTML = html;
+            setFilter(currentFilter);
+        }
+
+        function updateAddCategorySelect() {
+            const select = document.getElementById('addCategory');
+            select.innerHTML = categoriesList.map(cat => `<option value="${cat}">${cat}</option>`).join('');
         }
 
         function renderGrid() {
@@ -386,6 +435,42 @@
             const pct = total > 0 ? Math.round((visitedCount / total) * 100) : 0;
             document.getElementById('visitedCountText').innerText = `${visitedCount} / ${total}`;
             document.getElementById('progressBar').style.width = `${pct}%`;
+        }
+
+        // カテゴリー管理モーダル関連
+        function openCategoryModal() {
+            renderCategoryManagementList();
+            document.getElementById('categoryModal').classList.remove('hidden');
+        }
+
+        function renderCategoryManagementList() {
+            const container = document.getElementById('categoryListContainer');
+            container.innerHTML = categoriesList.map((cat, idx) => `
+                <div class="flex justify-between items-center bg-gray-50 p-2 rounded-lg border border-michelin-border text-xs">
+                    <span class="font-medium text-gray-800">${cat}</span>
+                    <button onclick="removeCategory(${idx})" class="text-red-500 hover:text-red-700 text-xs px-1.5 py-0.5">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function addCategory(e) {
+            e.preventDefault();
+            const input = document.getElementById('newCategoryInput');
+            const name = input.value.trim();
+            if (name && !categoriesList.includes(name)) {
+                categoriesList.push(name);
+                saveCategories();
+                input.value = '';
+            }
+        }
+
+        function removeCategory(idx) {
+            if (confirm(`カテゴリー「${categoriesList[idx]}」を削除しますか？`)) {
+                categoriesList.splice(idx, 1);
+                saveCategories();
+            }
         }
 
         function openStampModal(id) {
@@ -501,6 +586,7 @@
         function exportData() {
             const exportPayload = {
                 userData: userUserData,
+                categories: categoriesList,
                 customRestaurants: JSON.parse(localStorage.getItem('gourmet_custom_restaurants') || '[]')
             };
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportPayload, null, 2));
@@ -520,6 +606,10 @@
                     const imported = JSON.parse(evt.target.result);
                     if (imported.userData) {
                         userUserData = imported.userData;
+                        if (imported.categories) {
+                            categoriesList = imported.categories;
+                            saveCategories();
+                        }
                         localStorage.setItem('gourmet_custom_restaurants', JSON.stringify(imported.customRestaurants || []));
                     } else {
                         userUserData = imported;
