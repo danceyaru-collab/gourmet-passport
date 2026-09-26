@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MICHELIN GUIDE PASSPORT - Kanji & Saya</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        michelin: {
+                            red: '#e21b23',       // 公式ミシュランレッド
+                            redhover: '#c4121a',
+                            bg: '#f8f9fa',        // 明るいライトグレー背景
+                            card: '#ffffff',      // 純白カード
+                            text: '#2d3748',      // ダークグレー文字
+                            subtext: '#718096',   // 補足文字
+                            border: '#e2e8f0'     // 薄い枠線
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Noto Sans JP', 'sans-serif'],
+                        serif: ['Noto Serif JP', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+            color: #2d3748;
+            font-family: 'Noto Sans JP', sans-serif;
+        }
+
+        .michelin-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            transition: all 0.25s ease;
+        }
+
+        .michelin-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.1);
+            border-color: #cbd5e0;
+        }
+
+        .filter-btn-active {
+            background-color: #2d3748 !important;
+            color: #ffffff !important;
+            border-color: #2d3748 !important;
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-16">
+
+    <header class="border-b border-michelin-border bg-white sticky top-0 z-30 px-4 py-3 shadow-sm">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-michelin-red flex items-center justify-center text-white shadow-sm">
+                    <i class="fa-solid fa-utensils text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg md:text-xl tracking-tight text-gray-900">MICHELIN GUIDE PASSPORT</h1>
+                    <p class="text-xs text-michelin-subtext">SPECIAL SELECTION: <span class="font-bold text-michelin-red">Kanji &amp; Saya</span></p>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-3">
+                <div class="bg-gray-50 px-4 py-1.5 rounded-full border border-michelin-border flex items-center gap-3">
+                    <span class="text-xs text-michelin-subtext font-medium">制覇率</span>
+                    <span id="visitedCountText" class="text-sm font-bold text-michelin-red">0 / 0</span>
+                    <div class="w-20 bg-gray-200 h-2 rounded-full overflow-hidden">
+                        <div id="progressBar" class="bg-michelin-red h-full transition-all duration-500 w-0"></div>
+                    </div>
+                </div>
+
+                <button onclick="openAddRestaurantModal()" class="bg-michelin-red hover:bg-michelin-redhover text-white px-3.5 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm flex items-center gap-1.5">
+                    <i class="fa-solid fa-plus"></i> <span>お店を追加</span>
+                </button>
+
+                <button onclick="exportData()" title="データ保存" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-full text-xs transition-all">
+                    <i class="fa-solid fa-download"></i>
+                </button>
+                <button onclick="document.getElementById('importFile').click()" title="データ復元" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-full text-xs transition-all">
+                    <i class="fa-solid fa-upload"></i>
+                </button>
+                <input type="file" id="importFile" class="hidden" accept=".json" onchange="importData(event)">
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 mt-6">
+        
+        <div class="flex flex-col md:flex-row justify-between items-center gap-3 mb-6 bg-white p-3 rounded-xl border border-michelin-border shadow-sm">
+            <div class="flex flex-wrap gap-1.5 justify-center" id="categoryFilterContainer">
+                </div>
+
+            <div class="relative w-full md:w-64">
+                <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+                <input type="text" id="searchInput" oninput="renderGrid()" placeholder="店名やエリアで検索..." class="w-full bg-gray-50 border border-michelin-border rounded-full pl-8 pr-4 py-1.5 text-xs text-michelin-text placeholder-gray-400 focus:outline-none focus:border-michelin-red">
+            </div>
+        </div>
+
+        <div id="restaurantGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+            </div>
+    </main>
+
+    <div id="stampModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white border border-michelin-border rounded-2xl max-w-lg w-full p-6 relative text-michelin-text shadow-xl">
+            <button onclick="closeModal('stampModal')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="border-b border-gray-100 pb-4 mb-4">
+                <span id="modalCategory" class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 text-michelin-red mb-1.5">カテゴリー</span>
+                <h2 id="modalTitle" class="text-xl font-bold font-serif text-gray-900">店名</h2>
+                <p id="modalAddress" class="text-xs text-michelin-subtext mt-1"><i class="fa-solid fa-location-dot text-michelin-red mr-1"></i>住所</p>
+                <p id="modalTel" class="text-xs text-michelin-subtext mt-0.5"><i class="fa-solid fa-phone text-michelin-red mr-1"></i>電話番号</p>
+                <a id="modalTabelog" href="#" target="_blank" class="inline-flex items-center text-xs text-michelin-red font-semibold hover:underline mt-2">
+                    <i class="fa-solid fa-arrow-up-right-from-square mr-1"></i> 食べログで詳細を見る
+                </a>
+            </div>
+
+            <form onsubmit="saveStamp(event)" class="space-y-4">
+                <input type="hidden" id="modalRestaurantId">
+
+                <div class="flex items-center justify-between bg-gray-50 p-3.5 rounded-xl border border-michelin-border">
+                    <div class="flex items-center gap-2.5">
+                        <i class="fa-solid fa-utensils text-lg text-michelin-red"></i>
+                        <div>
+                            <p class="font-bold text-xs text-gray-800">来店ステータス</p>
+                            <p class="text-[10px] text-michelin-subtext">訪問済みの場合はスイッチをオン</p>
+                        </div>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="modalVisited" class="sr-only peer" onchange="toggleVisitedUI()">
+                        <div class="w-12 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-michelin-red"></div>
+                    </label>
+                </div>
+
+                <div id="visitedFields" class="space-y-3">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">来店日</label>
+                        <input type="date" id="modalDate" class="w-full bg-gray-50 border border-michelin-border rounded-lg p-2 text-xs text-michelin-text focus:outline-none focus:border-michelin-red">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">美味しかった料理・ふたりのメモ</label>
+                        <textarea id="modalNotes" rows="3" placeholder="おすすめ料理や感想を記録..." class="w-full bg-gray-50 border border-michelin-border rounded-lg p-2 text-xs text-michelin-text focus:outline-none focus:border-michelin-red"></textarea>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center pt-3 border-t border-gray-100">
+                    <button type="button" onclick="deleteCustomRestaurant()" id="btnDeleteCustom" class="text-xs text-red-500 hover:underline hidden">
+                        <i class="fa-solid fa-trash mr-1"></i> 削除
+                    </button>
+                    <div class="flex gap-2 ml-auto">
+                        <button type="button" onclick="closeModal('stampModal')" class="px-3.5 py-1.5 rounded-lg border border-gray-300 text-gray-600 text-xs font-medium">キャンセル</button>
+                        <button type="submit" class="px-4 py-1.5 rounded-lg bg-michelin-red text-white font-bold text-xs shadow-sm">保存する</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="addRestaurantModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white border border-michelin-border rounded-2xl max-w-lg w-full p-6 relative text-michelin-text shadow-xl">
+            <button onclick="closeModal('addRestaurantModal')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <h2 class="text-lg font-bold font-serif text-gray-900 mb-3 border-b border-gray-100 pb-2">
+                <i class="fa-solid fa-plus-circle text-michelin-red mr-1.5"></i>新しいお店を追加
+            </h2>
+
+            <form onsubmit="addNewRestaurant(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 mb-1">店名 *</label>
+                    <input type="text" id="addName" required placeholder="例: レストラン名" class="w-full bg-gray-50 border border-michelin-border rounded-lg p-2 text-xs focus:outline-none focus:border-michelin-red">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 mb-1">カテゴリー *</label>
+                    <select id="addCategory" class="w-full bg-gray-50 border border-michelin-border rounded-lg p-2 text-xs focus:outline-none focus:border-michelin-red">
+                        <option value="おさや行きたいお店">おさや行きたいお店</option>
+                        <option value="イタリアン">イタリアン</option>
+                        <option value="フレンチ">フレンチ</option>
+                        <option value="和食・その他">和食・その他</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 mb-1">住所・エリア</label>
+                    <input type="text" id="addAddress" placeholder="例: 東京都港区..." class="w-full bg-gray-50 border border-michelin-border rounded-lg p-2 text-xs focus:outline-none focus:border-michelin-red">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 mb-1">電話番号</label>
+                    <input type="text" id="addTel" placeholder="例: 03-XXXX-XXXX" class="w-full bg-gray-50 border border-michelin-border rounded-lg p-2 text-xs focus:outline-none focus:border-michelin-red">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 mb-1">食べログ等のURL</label>
+                    <input type="url" id="addTabelog" placeholder="https://tabelog.com/..." class="w-full bg-gray-50 border border-michelin-border rounded-lg p-2 text-xs focus:outline-none focus:border-michelin-red">
+                </div>
+
+                <div class="flex justify-end gap-2 pt-3 border-t border-gray-100">
+                    <button type="button" onclick="closeModal('addRestaurantModal')" class="px-3.5 py-1.5 rounded-lg border border-gray-300 text-gray-600 text-xs font-medium">キャンセル</button>
+                    <button type="submit" class="px-4 py-1.5 rounded-lg bg-michelin-red hover:bg-michelin-redhover text-white font-bold text-xs shadow-sm">追加する</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const initialRestaurants = [
+            // おさやの最近ガチ行きたいお店
+            { id: 1, name: "酒・肴「赤津庄兵衛」", category: "おさや行きたいお店", address: "東京都杉並区天沼3-11-3 モアビル102", tel: "050-5590-2987", tabelog: "https://tabelog.com/tokyo/A1319/A131906/13209982/" },
+            { id: 2, name: "総本家更科堀井 本店", category: "おさや行きたいお店", address: "東京都港区元麻布3-11-4", tel: "03-3403-3401", tabelog: "https://tabelog.com/tokyo/A1307/A130702/13001226/" },
+            { id: 3, name: "Wineshop & Diner FUJIMARU 浅草橋店", category: "おさや行きたいお店", address: "東京都中央区東日本橋2-27-19 Ｓビル 2F", tel: "050-5593-6109", tabelog: "https://tabelog.com/tokyo/A1311/A131103/13167076/" },
+            { id: 4, name: "浅草橋ワインバル八十郎商店", category: "おさや行きたいお店", address: "東京都台東区浅草橋1-18-4", tel: "050-5600-4912", tabelog: "https://tabelog.com/tokyo/A1311/A131103/13284282/" },
+            { id: 5, name: "屋根裏のパリ食堂", category: "おさや行きたいお店", address: "東京都目黒区青葉台1-17-2 青葉台117ビル 3F", tel: "050-5872-2297", tabelog: "https://tabelog.com/tokyo/A1317/A131701/13141729/" },
+
+            // 大将軍がいま行きたいイタリアン5選
+            { id: 6, name: "ポンテ デル ピアット", category: "イタリアン", address: "東京都渋谷区広尾5-19-7 協和ビル 1F", tel: "03-3473-0707", tabelog: "https://tabelog.com/tokyo/A1307/A130703/13166111/" },
+            { id: 7, name: "アッピア 本店", category: "イタリアン", address: "東京都港区南麻布4-11-35 インペリアル広尾 B101", tel: "03-3444-5801", tabelog: "https://tabelog.com/tokyo/A1307/A130703/13001593/" },
+            { id: 8, name: "リストランテ アクアパッツァ", category: "イタリアン", address: "東京都港区南青山2-27-18 青山エムズタワーパサージュ青山 2F", tel: "050-5869-3542", tabelog: "https://tabelog.com/tokyo/A1306/A130603/13004578/" },
+            { id: 9, name: "トラットリア タンタボッカ", category: "イタリアン", address: "東京都渋谷区千駄ヶ谷4-5-1 ニュー外苑ハイツ 1F", tel: "050-3187-6924", tabelog: "https://tabelog.com/tokyo/A1304/A130403/13058484/" },
+            { id: 10, name: "ラ・ベットラ・ダ・オチアイ", category: "イタリアン", address: "東京都中央区銀座1-21-2", tel: "03-3567-5656", tabelog: "https://tabelog.com/tokyo/A1313/A131301/13002504/" },
+
+            // 大将軍がいま行きたいフレンチ
+            { id: 11, name: "レストラン ナズ", category: "フレンチ", address: "長野県北佐久郡軽井沢町追分138-1", tel: "0267-46-8840", tabelog: "https://tabelog.com/nagano/A2003/A200301/20028578/" },
+            { id: 12, name: "アマラントス", category: "フレンチ", address: "東京都中央区銀座5-6-7 SANWA すずらん Bldg.９F", tel: "050-5596-4560", tabelog: "https://tabelog.com/tokyo/A1301/A130101/13307700/" },
+            { id: 13, name: "モノリス", category: "フレンチ", address: "東京都渋谷区渋谷2-6-1 ウィンド渋谷 1F", tel: "050-5595-1221", tabelog: "https://tabelog.com/tokyo/A1303/A130301/13108686/" },
+            { id: 14, name: "sio", category: "フレンチ", address: "東京都渋谷区上原1-35-3", tel: "03-6804-7607", tabelog: "https://tabelog.com/tokyo/A1318/A131811/13150395/" },
+            { id: 15, name: "プレヴナンス", category: "フレンチ", address: "東京都港区南青山2-13-7 マトリス 1F", tel: "050-5590-5273", tabelog: "https://tabelog.com/tokyo/A1306/A130603/13162493/" },
+            { id: 16, name: "渡辺料理店", category: "フレンチ", address: "東京都江東区富岡1-2-9 1F", tel: "03-6381-8899", tabelog: "https://tabelog.com/tokyo/A1313/A131303/13274535/" },
+            { id: 17, name: "マダム・トキ", category: "フレンチ", address: "東京都渋谷区鉢山町14-7", tel: "03-3461-2263", tabelog: "https://tabelog.com/tokyo/A1303/A130303/13001707/" }
+        ];
+
+        let allRestaurants = [];
+        let userUserData = {};
+        let currentFilter = 'all';
+
+        window.onload = function() {
+            loadData();
+            renderCategoryButtons();
+            renderGrid();
+            updateProgress();
+        };
+
+        function loadData() {
+            const savedCustom = localStorage.getItem('gourmet_custom_restaurants');
+            const customList = savedCustom ? JSON.parse(savedCustom) : [];
+            allRestaurants = [...initialRestaurants, ...customList];
+
+            const savedUserData = localStorage.getItem('kanji_saya_gourmet_passport');
+            userUserData = savedUserData ? JSON.parse(savedUserData) : {};
+        }
+
+        function saveData() {
+            localStorage.setItem('kanji_saya_gourmet_passport', JSON.stringify(userUserData));
+            updateProgress();
+            renderGrid();
+        }
+
+        function renderCategoryButtons() {
+            const container = document.getElementById('categoryFilterContainer');
+            const categories = ['all', 'おさや行きたいお店', 'イタリアン', 'フレンチ', '和食・その他', 'visited', 'unvisited'];
+            
+            const labelMap = {
+                'all': 'すべて',
+                'visited': '訪問済み',
+                'unvisited': '未訪問'
+            };
+
+            container.innerHTML = categories.map(cat => {
+                const label = labelMap[cat] || cat;
+                return `<button onclick="setFilter('${cat}')" id="btn-${cat}" class="filter-btn px-3 py-1 rounded-full text-xs font-semibold border border-michelin-border bg-gray-50 text-gray-700 hover:bg-gray-100 transition-all">
+                    ${label}
+                </button>`;
+            }).join('');
+
+            setFilter('all');
+        }
+
+        function renderGrid() {
+            const grid = document.getElementById('restaurantGrid');
+            const searchVal = document.getElementById('searchInput').value.toLowerCase();
+            grid.innerHTML = '';
+
+            const filtered = allRestaurants.filter(r => {
+                const userData = userUserData[r.id] || {};
+                const isVisited = !!userData.visited;
+
+                if (currentFilter !== 'all' && currentFilter !== 'visited' && currentFilter !== 'unvisited') {
+                    if (r.category !== currentFilter) return false;
+                }
+                if (currentFilter === 'visited' && !isVisited) return false;
+                if (currentFilter === 'unvisited' && isVisited) return false;
+
+                if (searchVal) {
+                    return r.name.toLowerCase().includes(searchVal) || 
+                           (r.address && r.address.toLowerCase().includes(searchVal)) ||
+                           r.category.toLowerCase().includes(searchVal);
+                }
+
+                return true;
+            });
+
+            filtered.forEach(r => {
+                const data = userUserData[r.id] || {};
+                const isVisited = !!data.visited;
+
+                const card = document.createElement('div');
+                card.className = `michelin-card p-4 flex flex-col justify-between relative cursor-pointer`;
+                card.onclick = () => openStampModal(r.id);
+
+                const dateSection = data.date ? `<p class="text-[11px] text-michelin-subtext mt-1.5"><i class="fa-regular fa-calendar text-michelin-red mr-1"></i>${data.date}</p>` : '';
+
+                card.innerHTML = `
+                    <div>
+                        <div class="flex justify-between items-start gap-1.5 mb-2">
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-gray-100 text-gray-700">
+                                ${r.category}
+                            </span>
+                            ${isVisited ? '<span class="text-[11px] text-michelin-red font-bold flex items-center gap-1"><i class="fa-solid fa-certificate"></i> VISITED</span>' : ''}
+                        </div>
+                        <h3 class="font-bold text-sm text-gray-900 font-serif leading-snug">${r.name}</h3>
+                        ${r.address ? `<p class="text-xs text-michelin-subtext mt-2"><i class="fa-solid fa-location-dot text-gray-400 mr-1"></i>${r.address}</p>` : ''}
+                        ${r.tel ? `<p class="text-xs text-michelin-subtext mt-0.5"><i class="fa-solid fa-phone text-gray-400 mr-1"></i>${r.tel}</p>` : ''}
+                        ${dateSection}
+                    </div>
+
+                    <div class="mt-4 pt-2.5 border-t border-gray-100 flex justify-between items-center">
+                        <a href="${r.tabelog}" target="_blank" onclick="event.stopPropagation()" class="text-xs text-michelin-red hover:underline flex items-center gap-1 font-semibold">
+                            食べログ <i class="fa-solid fa-external-link text-[10px]"></i>
+                        </a>
+                        ${isVisited ? 
+                            `<div class="w-8 h-8 rounded-full bg-michelin-red text-white flex items-center justify-center text-[9px] font-bold tracking-tighter shadow-sm">
+                                SAVORED
+                             </div>` : 
+                            `<div class="w-7 h-7 rounded-full border border-dashed border-gray-300 flex items-center justify-center text-gray-400 text-[10px]">
+                                未
+                             </div>`
+                        }
+                    </div>
+                `;
+
+                grid.appendChild(card);
+            });
+        }
+
+        function setFilter(type) {
+            currentFilter = type;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('filter-btn-active');
+            });
+
+            const activeBtn = document.getElementById(`btn-${type}`);
+            if (activeBtn) {
+                activeBtn.classList.add('filter-btn-active');
+            }
+
+            renderGrid();
+        }
+
+        function updateProgress() {
+            const total = allRestaurants.length;
+            let visitedCount = 0;
+
+            allRestaurants.forEach(r => {
+                if (userUserData[r.id] && userUserData[r.id].visited) {
+                    visitedCount++;
+                }
+            });
+
+            const pct = total > 0 ? Math.round((visitedCount / total) * 100) : 0;
+            document.getElementById('visitedCountText').innerText = `${visitedCount} / ${total}`;
+            document.getElementById('progressBar').style.width = `${pct}%`;
+        }
+
+        function openStampModal(id) {
+            const r = allRestaurants.find(x => x.id === id);
+            const data = userUserData[id] || {};
+
+            document.getElementById('modalRestaurantId').value = id;
+            document.getElementById('modalTitle').innerText = r.name;
+            document.getElementById('modalCategory').innerText = r.category;
+            document.getElementById('modalAddress').innerText = r.address || '住所未登録';
+            document.getElementById('modalTel').innerText = r.tel || '電話番号未登録';
+            
+            const tabelogBtn = document.getElementById('modalTabelog');
+            if (r.tabelog) {
+                tabelogBtn.href = r.tabelog;
+                tabelogBtn.classList.remove('hidden');
+            } else {
+                tabelogBtn.classList.add('hidden');
+            }
+
+            document.getElementById('modalVisited').checked = !!data.visited;
+            document.getElementById('modalDate').value = data.date || '';
+            document.getElementById('modalNotes').value = data.notes || '';
+
+            const btnDelete = document.getElementById('btnDeleteCustom');
+            if (r.id > 1000) {
+                btnDelete.classList.remove('hidden');
+            } else {
+                btnDelete.classList.add('hidden');
+            }
+
+            toggleVisitedUI();
+            document.getElementById('stampModal').classList.remove('hidden');
+        }
+
+        function openAddRestaurantModal() {
+            document.getElementById('addRestaurantModal').classList.remove('hidden');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+
+        function toggleVisitedUI() {
+            const isChecked = document.getElementById('modalVisited').checked;
+            const visitedFields = document.getElementById('visitedFields');
+            if (isChecked) {
+                visitedFields.classList.remove('opacity-40', 'pointer-events-none');
+            } else {
+                visitedFields.classList.add('opacity-40', 'pointer-events-none');
+            }
+        }
+
+        function saveStamp(e) {
+            e.preventDefault();
+            const id = parseInt(document.getElementById('modalRestaurantId').value);
+            const isVisited = document.getElementById('modalVisited').checked;
+
+            userUserData[id] = {
+                visited: isVisited,
+                date: document.getElementById('modalDate').value,
+                notes: document.getElementById('modalNotes').value
+            };
+
+            saveData();
+            closeModal('stampModal');
+        }
+
+        function addNewRestaurant(e) {
+            e.preventDefault();
+            
+            const newRes = {
+                id: Date.now(),
+                name: document.getElementById('addName').value,
+                category: document.getElementById('addCategory').value,
+                address: document.getElementById('addAddress').value,
+                tel: document.getElementById('addTel').value,
+                tabelog: document.getElementById('addTabelog').value || '#'
+            };
+
+            const savedCustom = localStorage.getItem('gourmet_custom_restaurants');
+            const customList = savedCustom ? JSON.parse(savedCustom) : [];
+            customList.push(newRes);
+            localStorage.setItem('gourmet_custom_restaurants', JSON.stringify(customList));
+
+            loadData();
+            updateProgress();
+            renderGrid();
+
+            e.target.reset();
+            closeModal('addRestaurantModal');
+        }
+
+        function deleteCustomRestaurant() {
+            const id = parseInt(document.getElementById('modalRestaurantId').value);
+            if (!confirm('このお店を削除しますか？')) return;
+
+            const savedCustom = localStorage.getItem('gourmet_custom_restaurants');
+            if (savedCustom) {
+                let customList = JSON.parse(savedCustom);
+                customList = customList.filter(x => x.id !== id);
+                localStorage.setItem('gourmet_custom_restaurants', JSON.stringify(customList));
+            }
+
+            delete userUserData[id];
+            saveData();
+            loadData();
+            renderGrid();
+            updateProgress();
+            closeModal('stampModal');
+        }
+
+        function exportData() {
+            const exportPayload = {
+                userData: userUserData,
+                customRestaurants: JSON.parse(localStorage.getItem('gourmet_custom_restaurants') || '[]')
+            };
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportPayload, null, 2));
+            const dlAnchorElem = document.createElement('a');
+            dlAnchorElem.setAttribute("href", dataStr);
+            dlAnchorElem.setAttribute("download", `gourmet_passport_backup_${new Date().toISOString().slice(0,10)}.json`);
+            dlAnchorElem.click();
+        }
+
+        function importData(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                try {
+                    const imported = JSON.parse(evt.target.result);
+                    if (imported.userData) {
+                        userUserData = imported.userData;
+                        localStorage.setItem('gourmet_custom_restaurants', JSON.stringify(imported.customRestaurants || []));
+                    } else {
+                        userUserData = imported;
+                    }
+                    saveData();
+                    loadData();
+                    renderGrid();
+                    updateProgress();
+                    alert('データを復元しました！');
+                } catch(err) {
+                    alert('ファイルの読み込みに失敗しました。');
+                }
+            };
+            reader.readAsText(file);
+        }
+    </script>
+</body>
+</html>
