@@ -16,7 +16,7 @@
       background-color: #f4f6f8;
       color: #333;
       padding: 20px 10px;
-      max-width: 800px;
+      max-width: 900px;
       margin: 0 auto;
     }
 
@@ -175,10 +175,10 @@
       font-size: 14px;
     }
 
-    /* 店舗一覧 */
+    /* 店舗一覧（グリッド表示） */
     .store-list {
-      display: flex;
-      flex-direction: column;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
       gap: 15px;
     }
 
@@ -188,11 +188,13 @@
       overflow: hidden;
       box-shadow: 0 2px 8px rgba(0,0,0,0.05);
       border: 1px solid #edf2f7;
+      display: flex;
+      flex-direction: column;
     }
 
     .store-image-container {
       width: 100%;
-      height: 200px;
+      height: 160px;
       overflow: hidden;
       background-color: #f7fafc;
     }
@@ -205,7 +207,9 @@
 
     .store-info {
       padding: 15px;
-      position: relative;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
     }
 
     .category-badge {
@@ -216,12 +220,13 @@
       padding: 3px 8px;
       border-radius: 4px;
       margin-bottom: 8px;
+      align-self: flex-start;
     }
 
     .store-name {
       font-size: 16px;
       font-weight: bold;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
     }
 
     .store-detail {
@@ -230,7 +235,7 @@
       margin-bottom: 4px;
     }
 
-    /* モーダル共通 */
+    /* モーダル */
     .modal-overlay {
       display: none;
       position: fixed;
@@ -272,7 +277,6 @@
       color: #a0aec0;
     }
 
-    /* カテゴリー編集フォーム */
     .add-category-box {
       display: flex;
       gap: 8px;
@@ -371,20 +375,23 @@
   </div>
 
   <script>
-    // --- 初期データ・ローカルストレージ設定 ---
+    // --- 初期データ ---
     let categories = JSON.parse(localStorage.getItem('gourmet_categories')) || [
-      "おさや行きたいお店",
+      "おさやの最近ガチ行きたいお店",
       "貫路が行きたいお店",
-      "イタリアン",
-      "フレンチ",
+      "大将軍が今行きたいイタリアン5選",
+      "大将軍が今行きたいフレンチ",
       "和食・その他"
     ];
 
     let stores = JSON.parse(localStorage.getItem('gourmet_stores')) || [
-      { id: 1, name: "酒・肴「赤津庄兵衛」", category: "おさや行きたいお店", address: "東京都杉並区天沼3-11-3", phone: "050-5590-2987", visited: false },
-      { id: 2, name: "総本家更科堀井 本店", category: "おさや行きたいお店", address: "東京都港区元麻布3-11-4", phone: "03-3403-3401", visited: false },
-      { id: 3, name: "エスト / est", category: "フレンチ", address: "東京都千代田区大手町1-2-1 フォーシーズンズホテル東京大手町", phone: "03-5281-0500", visited: false },
-      { id: 4, name: "トゥールダルジャン 東京", category: "フレンチ", address: "東京都千代田区紀尾井町4-1 ホテルニューオータニ", phone: "03-3239-0300", visited: false }
+      { id: 1, name: "レストラン ナズ", category: "大将軍が今行きたいフレンチ", address: "長野県北佐久郡軽井沢町追分138-1", phone: "0267-46-8840", visited: false },
+      { id: 2, name: "アマラントス", category: "大将軍が今行きたいフレンチ", address: "東京都中央区銀座5-6-7 SANWA すずらん Bldg. 9F", phone: "050-5596-4560", visited: false },
+      { id: 3, name: "モノリス", category: "大将軍が今行きたいフレンチ", address: "東京都渋谷区渋谷2-6-1 ウィンド渋谷 1F", phone: "050-5595-1221", visited: false },
+      { id: 4, name: "sio", category: "大将軍が今行きたいフレンチ", address: "東京都渋谷区上原1-35-3", phone: "03-6804-7607", visited: false },
+      { id: 5, name: "プレヴァナンス", category: "大将軍が今行きたいフレンチ", address: "東京都港区南青山2-13-7 マトリス 1F", phone: "050-5590-5273", visited: false },
+      { id: 6, name: "渡辺料理店", category: "大将軍が今行きたいフレンチ", address: "東京都江東区富岡1-2-9 1F", phone: "03-6381-8899", visited: false },
+      { id: 7, name: "マダム・トキ", category: "大将軍が今行きたいフレンチ", address: "東京都渋谷区鉢山町14-7", phone: "03-3461-2263", visited: false }
     ];
 
     let currentFilter = "すべて";
@@ -397,12 +404,21 @@
       "image_b2bdfa.jpg"
     ];
 
-    function getRandomFrenchImage() {
-      const index = Math.floor(Math.random() * frenchImages.length);
-      return frenchImages[index];
+    // 店舗IDごとに画像を固定して毎回ランダムに変わるのを防止（指定店舗に4枚の中から1枚をランダム割当）
+    function getStoreImage(store) {
+      // カテゴリー名に「フレンチ」または「フランス」が含まれているか判定
+      const categoryName = store.category || "";
+      const isFrench = categoryName.includes("フレンチ") || categoryName.includes("フランス");
+
+      if (isFrench) {
+        // IDを使って4枚の中から1枚を選択（リロードしても画像が変わらず固定される）
+        const imageIndex = Math.abs(store.id) % frenchImages.length;
+        return frenchImages[imageIndex];
+      }
+      return store.imageUrl || null;
     }
 
-    // --- 描画関連処理 ---
+    // --- 描画処理 ---
     function saveAndRender() {
       localStorage.setItem('gourmet_categories', JSON.stringify(categories));
       localStorage.setItem('gourmet_stores', JSON.stringify(stores));
@@ -439,14 +455,12 @@
       const searchText = document.getElementById('searchInput').value.toLowerCase();
 
       const filteredStores = stores.filter(store => {
-        // カテゴリー・状態フィルター
         let matchFilter = false;
         if (currentFilter === "すべて") matchFilter = true;
         else if (currentFilter === "訪問済み") matchFilter = store.visited;
         else if (currentFilter === "未訪問") matchFilter = !store.visited;
         else matchFilter = store.category === currentFilter;
 
-        // 検索ワードフィルター
         const matchSearch = store.name.toLowerCase().includes(searchText) || 
                             (store.address && store.address.toLowerCase().includes(searchText));
 
@@ -454,14 +468,12 @@
       });
 
       if (filteredStores.length === 0) {
-        storeList.innerHTML = `<div style="text-align:center; padding: 40px; color: #a0aec0;">該当するお店がありません</div>`;
+        storeList.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding: 40px; color: #a0aec0;">該当するお店がありません</div>`;
         return;
       }
 
       storeList.innerHTML = filteredStores.map(store => {
-        // フレンチ判定＆ランダム画像取得
-        const isFrench = store.category === "フレンチ" || store.category === "フランス料理";
-        const imageUrl = isFrench ? getRandomFrenchImage() : store.imageUrl;
+        const imageUrl = getStoreImage(store);
 
         return `
           <div class="store-card">
@@ -486,7 +498,7 @@
       document.getElementById('progressRate').innerText = `${visitedCount} / ${stores.length}`;
     }
 
-    // --- カテゴリー管理処理 ---
+    // --- カテゴリー管理モーダル ---
     function openCategoryModal() {
       renderCategoryEditList();
       document.getElementById('categoryModal').classList.add('active');
@@ -525,7 +537,6 @@
       const oldName = categories[index];
       categories[index] = newName;
 
-      // 登録済み店舗のカテゴリー名も更新
       stores.forEach(store => {
         if (store.category === oldName) {
           store.category = newName;
@@ -551,7 +562,7 @@
       }
     }
 
-    // --- お店追加処理 ---
+    // --- お店追加 ---
     function openAddStoreModal() {
       document.getElementById('addStoreModal').classList.add('active');
     }
@@ -588,7 +599,7 @@
       saveAndRender();
     }
 
-    // 初期起動
+    // 初期化
     saveAndRender();
   </script>
 </body>
